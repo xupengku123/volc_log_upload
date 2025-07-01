@@ -10,6 +10,18 @@ class MockVolcLogUploadPlatform
 
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
+
+  @override
+  Future<void> initClient({required String endpoint, required String region, required String ak, required String sk, String? securityToken}) {
+    // TODO: implement initClient
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> sendLog(String topicId) {
+    // TODO: implement sendLog
+    throw UnimplementedError();
+  }
 }
 
 void main() {

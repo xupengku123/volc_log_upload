@@ -1,8 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-->引入tls sdk 需要加这个网络权限</!-->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="volc_log_upload_example"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="24">
         <activity
             android:name=".MainActivity"
             android:exported="true"

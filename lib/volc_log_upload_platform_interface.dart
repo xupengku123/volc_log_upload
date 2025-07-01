@@ -26,4 +26,18 @@ abstract class VolcLogUploadPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  Future<void> initClient({
+    required String endpoint,
+    required String region,
+    required String ak,
+    required String sk,
+    String? securityToken,
+  }) {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
+
+  Future<String?> sendLog(String topicId) {
+    throw UnimplementedError('platformVersion() has not been implemented.');
+  }
 }

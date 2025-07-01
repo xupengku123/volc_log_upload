@@ -14,4 +14,29 @@ class MethodChannelVolcLogUpload extends VolcLogUploadPlatform {
     final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
+
+  @override
+  Future<void> initClient({
+    required String endpoint,
+    required String region,
+    required String ak,
+    required String sk,
+    String? securityToken,
+  }) async {
+    await methodChannel.invokeMethod('initClient', {
+      'endpoint': endpoint,
+      'region': region,
+      'ak': ak,
+      'sk': sk,
+      'securityToken': securityToken,
+    });
+  }
+
+  @override
+  Future<String?> sendLog(String topicId) async {
+    final result = await methodChannel.invokeMethod<String>('sendLog', {
+      'topicId': topicId,
+    });
+    return result;
+  }
 }

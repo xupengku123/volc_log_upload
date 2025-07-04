@@ -1,4 +1,5 @@
 
+import 'log_entity.dart';
 import 'volc_log_upload_platform_interface.dart';
 
 class VolcLogUpload {
@@ -22,7 +23,7 @@ class VolcLogUpload {
     );
   }
 
-  Future<String?> sendLog(String topicId) {
-    return VolcLogUploadPlatform.instance.sendLog(topicId);
+  Future<String?> sendLog(String topicId,List<LogEntity> logs) {
+    return VolcLogUploadPlatform.instance.sendLog(topicId,logs);
   }
 }

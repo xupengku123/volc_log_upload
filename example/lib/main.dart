@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:volc_log_upload/log_entity.dart';
 import 'package:volc_log_upload/volc_log_upload.dart';
+import 'package:volc_log_upload_example/constans.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,6 +21,13 @@ class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _volcLogUploadPlugin = VolcLogUpload();
 
+  List<LogEntity> logs = [
+    LogEntity(createTime: DateTime.now(), content: '11111',source: 'android',path: 'homepageRouter',level: 'error',type: 'click'),
+    LogEntity(createTime: DateTime.now(), content: '22222',source: 'android',path: 'homepageRouter',level: 'info',type: 'click'),
+    LogEntity(createTime: DateTime.now(), content: '33333',source: 'android',path: 'homepageRouter',level: 'waring',type: 'network'),
+    LogEntity(createTime: DateTime.now(), content: '44444',source: 'android',path: 'homepageRouter',level: 'waring',type: 'network'),
+    LogEntity(createTime: DateTime.now(), content: '55555',source: 'ios',path: 'message',level: 'waring',type: 'network'),
+  ];
   @override
   void initState() {
     super.initState();
@@ -49,13 +58,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+
+    uploadLog() async {
+      await _volcLogUploadPlugin.initClient(endpoint: ConstantValue.endpoint, region: ConstantValue.region, ak: ConstantValue.ak, sk: ConstantValue.sk);
+      _volcLogUploadPlugin.sendLog(ConstantValue.topicId,logs);
+    }
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: TextButton(
+              onPressed: (){
+                uploadLog();
+              },
+              child: Text('上传日志'))
+          ,
         ),
       ),
     );

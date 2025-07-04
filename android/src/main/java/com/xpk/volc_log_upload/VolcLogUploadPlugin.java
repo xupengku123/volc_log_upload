@@ -1,15 +1,26 @@
 package com.xpk.volc_log_upload;
 
+import static com.volcengine.model.tls.Const.LZ4;
+
+import static java.util.Map.*;
+
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.volcengine.model.tls.ClientBuilder;
 import com.volcengine.model.tls.ClientConfig;
-import com.volcengine.model.tls.Const;
+import com.volcengine.model.tls.LogItem;
 import com.volcengine.model.tls.exception.LogException;
 import com.volcengine.model.tls.pb.PutLogRequest;
 import com.volcengine.model.tls.request.PutLogsRequest;
+import com.volcengine.model.tls.request.PutLogsRequestV2;
 import com.volcengine.model.tls.response.PutLogsResponse;
 import com.volcengine.service.tls.TLSLogClient;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -46,7 +57,10 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
         break;
       case "sendLog":
         String topicId = call.argument("topicId");
-        sendLog(topicId, result);
+        // 获取 logs
+        List<Map<String, Object>> logs = call.argument("logs");
+
+        sendLogV2(topicId, logs,result);
         break;
       case "getPlatformVersion":
         result.success("Android " + android.os.Build.VERSION.RELEASE);
@@ -57,7 +71,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   private void initClient(String endpoint, String region, String ak, String sk, String token) {
-    ClientConfig config = new ClientConfig(endpoint, region, ak, sk, token);
+    ClientConfig config = new ClientConfig(endpoint, region, ak, sk);
     try {
       tlsLogClient = ClientBuilder.newClient(config);
     } catch (LogException e) {
@@ -70,14 +84,71 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
       result.error("NO_CLIENT", "TLSLogClient is not initialized", null);
       return;
     }
-    try {
-      PutLogsRequest req = oneLogsRequest(topicId);
-      PutLogsResponse resp = tlsLogClient.putLogs(req);
-      logCount++;
-      result.success("success:" + logCount);
-    } catch (LogException e) {
-      e.printStackTrace();
-      result.error("LOG_ERROR", e.getMessage(), null);
+      new Thread(() -> {
+        PutLogsRequest req = oneLogsRequest(topicId);
+          PutLogsResponse resp;
+          try {
+              resp = tlsLogClient.putLogs(req);
+          } catch (LogException e) {
+              throw new RuntimeException(e);
+          }
+          Log.i("put logs success","response:" +resp);
+        logCount++;
+        result.success("success:" + logCount);
+      }).start();
+  }
+
+  private void sendLogV2(String topicId, List<Map<String, Object>> logs,Result result) {
+    if (tlsLogClient == null) {
+      result.error("NO_CLIENT", "TLSLogClient is not initialized", null);
+      return;
+    }
+    new Thread(() -> {
+      // 写入日志
+      List<LogItem> resultLogs = new ArrayList<>();
+
+      if(logs!= null && !logs.isEmpty()){
+        for (Map<String, Object> log : logs) {
+          Long createTimeMillis = (Long) log.get("createTime");
+          String content = (String) log.get("content");
+          String source = (String) log.get("source");
+          String path = (String) log.get("path");
+          String accountId = (String) log.get("accountId");
+          String level = (String) log.get("level");
+          String type = (String) log.get("type");
+          if(createTimeMillis==null){
+            createTimeMillis = System.currentTimeMillis();
+          }
+          LogItem item = new LogItem(createTimeMillis);
+          safeAddContent(item, "content", content);
+          safeAddContent(item, "source", source);
+          safeAddContent(item, "path", path);
+          safeAddContent(item, "accountId", accountId);
+          safeAddContent(item, "level", level);
+          safeAddContent(item, "type", type);
+
+          Log.d("Plugin", "LogEntity: " + createTimeMillis + ", content=" + content + ", source=" + source +
+                  ", path=" + path + ", accountId=" + accountId + ", level=" + level + ", type=" + type);
+          resultLogs.add(item);
+        }
+      }
+      if(resultLogs.isEmpty()){
+        return;
+      }
+        try {
+            PutLogsRequestV2 putLogsRequestV2 = new PutLogsRequestV2(resultLogs, topicId, null, LZ4);
+            PutLogsResponse putLogsResponse = tlsLogClient.putLogsV2(putLogsRequestV2);
+          Log.i("put logs success","response:" +putLogsResponse);
+          result.success("success:");
+        } catch (LogException e) {
+            throw new RuntimeException(e);
+        }
+    }).start();
+  }
+
+  private void safeAddContent(LogItem item, String key, String value) {
+    if (value != null) {
+      item.addContent(key, value);
     }
   }
 
@@ -105,7 +176,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
             .build();
 
     PutLogsRequest req = new PutLogsRequest(groupList, topicId);
-    req.setCompressType(Const.LZ4);
+    req.setCompressType(LZ4);
     return req;
   }
 

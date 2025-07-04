@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:volc_log_upload/log_entity.dart';
 
 import 'volc_log_upload_platform_interface.dart';
 
@@ -33,9 +34,10 @@ class MethodChannelVolcLogUpload extends VolcLogUploadPlatform {
   }
 
   @override
-  Future<String?> sendLog(String topicId) async {
+  Future<String?> sendLog(String topicId,List<LogEntity> logs) async {
     final result = await methodChannel.invokeMethod<String>('sendLog', {
       'topicId': topicId,
+      'logs' : logs.map((e) => e.toMap()).toList(),
     });
     return result;
   }

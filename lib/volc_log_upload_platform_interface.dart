@@ -1,4 +1,5 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:volc_log_upload/log_entity.dart';
 
 import 'volc_log_upload_method_channel.dart';
 
@@ -37,7 +38,7 @@ abstract class VolcLogUploadPlatform extends PlatformInterface {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 
-  Future<String?> sendLog(String topicId) {
+  Future<String?> sendLog(String topicId,List<LogEntity> logs) {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
 }

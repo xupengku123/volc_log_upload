@@ -2,8 +2,6 @@ package com.xpk.volc_log_upload;
 
 import static com.volcengine.model.tls.Const.LZ4;
 
-import static java.util.Map.*;
-
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -52,8 +50,8 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
         String ak = call.argument("ak");
         String sk = call.argument("sk");
         String token = call.argument("securityToken");
-        initClient(endpoint, region, ak, sk, token);
-        result.success(null);
+        initClient(endpoint, region, ak, sk, token,result);
+
         break;
       case "sendLog":
         String topicId = call.argument("topicId");
@@ -70,15 +68,20 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
     }
   }
 
-  private void initClient(String endpoint, String region, String ak, String sk, String token) {
+  private void initClient(String endpoint, String region, String ak, String sk, String token, Result result) {
+    if(tlsLogClient != null){
+      result.success(null);
+      return;
+    }
     ClientConfig config = new ClientConfig(endpoint, region, ak, sk);
     try {
       tlsLogClient = ClientBuilder.newClient(config);
+      result.success(null);
     } catch (LogException e) {
-      e.printStackTrace();
+      result.error(e.getErrorCode(),e.getErrorMessage(),e.getMessage());
     }
   }
-
+  //这个方法不用 用的下面V2
   private void sendLog(String topicId, MethodChannel.Result result) {
     if (tlsLogClient == null) {
       result.error("NO_CLIENT", "TLSLogClient is not initialized", null);

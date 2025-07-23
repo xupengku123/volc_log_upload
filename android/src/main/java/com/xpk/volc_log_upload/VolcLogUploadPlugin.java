@@ -2,6 +2,7 @@ package com.xpk.volc_log_upload;
 
 import static com.volcengine.model.tls.Const.LZ4;
 
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -61,7 +62,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
         sendLogV2(topicId, logs,result);
         break;
       case "getPlatformVersion":
-        result.success("Android " + android.os.Build.VERSION.RELEASE);
+        result.success("Android " + Build.VERSION.RELEASE);
         break;
       default:
         result.notImplemented();
@@ -82,18 +83,18 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
     }
   }
   //这个方法不用 用的下面V2
-  private void sendLog(String topicId, MethodChannel.Result result) {
+  private void sendLog(String topicId, Result result) {
     if (tlsLogClient == null) {
       result.error("NO_CLIENT", "TLSLogClient is not initialized", null);
       return;
     }
       new Thread(() -> {
         PutLogsRequest req = oneLogsRequest(topicId);
-          PutLogsResponse resp;
+          PutLogsResponse resp = null;
           try {
               resp = tlsLogClient.putLogs(req);
           } catch (LogException e) {
-              throw new RuntimeException(e);
+            result.error("UPLOAD_EXCEPTION", "火山引擎上传日志异常", null);
           }
           Log.i("put logs success","response:" +resp);
         logCount++;
@@ -144,7 +145,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
           Log.i("put logs success","response:" +putLogsResponse);
           result.success("success:");
         } catch (LogException e) {
-            throw new RuntimeException(e);
+          result.error("UPLOAD_EXCEPTION", "火山引擎上传日志异常", null);
         }
     }).start();
   }

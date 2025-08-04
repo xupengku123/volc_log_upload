@@ -13,7 +13,14 @@ A new Flutter project.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files        = 'Classes/**/*.{h,m,swift}'
+  s.exclude_files       = 'Classes/VeTLSiOSSDK.xcframework/**/*'
+
+  s.public_header_files = 'Classes/**/*.h'
+
+  # 引入 vendored framework（VeTLSiOSSDK）
+  s.vendored_frameworks = 'Classes/VeTLSiOSSDK.xcframework'
+  
   s.dependency 'Flutter'
   s.platform = :ios, '12.0'
 

@@ -1,19 +1,100 @@
 import Flutter
 import UIKit
+import VeTLSiOSSDK
 
 public class VolcLogUploadPlugin: NSObject, FlutterPlugin {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "volc_log_upload", binaryMessenger: registrar.messenger())
-    let instance = VolcLogUploadPlugin()
-    registrar.addMethodCallDelegate(instance, channel: channel)
-  }
+    private var tlsLogClient: TLSClient?
 
-  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    switch call.method {
-    case "getPlatformVersion":
-      result("iOS " + UIDevice.current.systemVersion)
-    default:
-      result(FlutterMethodNotImplemented)
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(name: "volc_log_upload", binaryMessenger: registrar.messenger())
+        let instance = VolcLogUploadPlugin()
+        registrar.addMethodCallDelegate(instance, channel: channel)
     }
-  }
+
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        switch call.method {
+        case "initClient":
+            guard
+                let args = call.arguments as? [String: Any],
+                let endpoint = args["endpoint"] as? String,
+                let region = args["region"] as? String,
+                let ak = args["ak"] as? String,
+                let sk = args["sk"] as? String
+            else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Missing initClient arguments", details: nil))
+                return
+            }
+
+            initClient(endpoint: endpoint, region: region, ak: ak, sk: sk, result: result)
+
+        case "sendLog":
+            guard
+                let args = call.arguments as? [String: Any],
+                let topicId = args["topicId"] as? String,
+                let logs = args["logs"] as? [[String: Any]]
+            else {
+                result(FlutterError(code: "INVALID_ARGS", message: "Missing sendLog args", details: nil))
+                return
+            }
+
+            sendLogV2(topicId: topicId, logs: logs, result: result)
+
+        case "getPlatformVersion":
+            result("iOS " + UIDevice.current.systemVersion)
+
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
+
+    private func initClient(endpoint: String, region: String, ak: String, sk: String, result: FlutterResult) {
+        if tlsLogClient != nil {
+            result(nil)
+            return
+        }
+
+        let config = TLSClientConfig()
+        config.endpoint = endpoint
+        config.region = region
+        config.accessKeyId = ak
+        config.accessKeySecret = sk
+
+        tlsLogClient = TLSClient(config: config)
+        result(nil)
+    }
+
+    private func sendLogV2(topicId: String, logs: [[String: Any]], result: @escaping FlutterResult) {
+        guard let client = tlsLogClient else {
+            result(FlutterError(code: "NO_CLIENT", message: "TLSLogClient is not initialized", details: nil))
+            return
+        }
+
+        let request = PutLogsV2Request()
+        request.topicId = topicId
+        var tempLogs = [PutLogsV2LogItem]()
+
+        do {
+            for log in logs {
+                let timeStamp: NSNumber
+                if let createTime = log["createTime"] as? Int {
+                    timeStamp = NSNumber(value: createTime)
+                } else {
+                    timeStamp = NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))
+                }
+
+                let logItem = PutLogsV2LogItem(keyValueAndTime: log, timeStamp: timeStamp)
+
+                if logItem != nil {
+                    logItem!.time = timeStamp
+                    tempLogs.append(logItem!)
+                }
+            }
+            request.logs = tempLogs
+
+            let response = client.putLogsV2(request) // 也可能抛错
+            result(response?.toJSONString())
+        } catch {
+            result(FlutterError(code: "UPLOAD_EXCEPTION", message: "日志上传失败", details: error.localizedDescription))
+        }
+    }
 }

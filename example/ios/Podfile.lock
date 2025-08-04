@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - volc_log_upload (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - volc_log_upload (from `.symlinks/plugins/volc_log_upload/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  volc_log_upload:
+    :path: ".symlinks/plugins/volc_log_upload/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  volc_log_upload: 28f121e85171e3e98f887ffb90f373558874f90f
+
+PODFILE CHECKSUM: e69bac94fb1a35552e912163ed51adcb1bb3527e
+
+COCOAPODS: 1.16.2

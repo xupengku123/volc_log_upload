@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:volc_log_upload/log_entity.dart';
 import 'package:volc_log_upload/volc_log_upload.dart';
@@ -22,12 +22,48 @@ class _MyAppState extends State<MyApp> {
   final _volcLogUploadPlugin = VolcLogUpload();
 
   List<LogEntity> logs = [
-    LogEntity(createTime: DateTime.now(), content: '11111',source: 'android',path: 'homepageRouter',level: 'error',type: 'click'),
-    LogEntity(createTime: DateTime.now(), content: '22222',source: 'android',path: 'homepageRouter',level: 'info',type: 'click'),
-    LogEntity(createTime: DateTime.now(), content: '33333',source: 'android',path: 'homepageRouter',level: 'waring',type: 'network'),
-    LogEntity(createTime: DateTime.now(), content: '44444',source: 'android',path: 'homepageRouter',level: 'waring',type: 'network'),
-    LogEntity(createTime: DateTime.now(), content: '55555',source: 'ios',path: 'message',level: 'waring',type: 'network'),
+    LogEntity(
+        createTime: DateTime.now(),
+        content: '11111',
+        platform: 'android',
+        path: 'homepageRouter',
+        level: 'error',
+        type: LogEntityType.click,
+        version: 'v1.42.0'),
+    LogEntity(
+        createTime: DateTime.now(),
+        content: '22222',
+        platform: 'android',
+        path: 'homepageRouter',
+        level: 'info',
+        type: LogEntityType.click,
+        version: 'v1.42.0'),
+    LogEntity(
+        createTime: DateTime.now(),
+        content: '33333',
+        platform: 'android',
+        path: 'homepageRouter',
+        level: 'waring',
+        type: LogEntityType.click,
+        version: 'v1.42.0'),
+    LogEntity(
+        createTime: DateTime.now(),
+        content: '44444',
+        platform: 'android',
+        path: 'homepageRouter',
+        level: 'waring',
+        type: LogEntityType.network,
+        version: 'v1.42.0'),
+    LogEntity(
+        createTime: DateTime.now(),
+        content: '55555',
+        platform: 'ios',
+        path: 'message',
+        level: 'waring',
+        type: LogEntityType.network,
+        version: 'v1.42.0'),
   ];
+
   @override
   void initState() {
     super.initState();
@@ -40,8 +76,7 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      platformVersion =
-          await _volcLogUploadPlugin.getPlatformVersion() ?? 'Unknown platform version';
+      platformVersion = await _volcLogUploadPlugin.getPlatformVersion() ?? 'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -58,10 +93,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-
     uploadLog() async {
-      await _volcLogUploadPlugin.initClient(endpoint: ConstantValue.endpoint, region: ConstantValue.region, ak: ConstantValue.ak, sk: ConstantValue.sk);
-      _volcLogUploadPlugin.sendLog(ConstantValue.topicId,logs);
+      await _volcLogUploadPlugin.initClient(
+          endpoint: ConstantValue.endpoint, region: ConstantValue.region, ak: ConstantValue.ak, sk: ConstantValue.sk);
+      _volcLogUploadPlugin.sendLog(ConstantValue.topicId, logs);
     }
 
     return MaterialApp(
@@ -71,11 +106,10 @@ class _MyAppState extends State<MyApp> {
         ),
         body: Center(
           child: TextButton(
-              onPressed: (){
+              onPressed: () {
                 uploadLog();
               },
-              child: Text('上传日志'))
-          ,
+              child: Text('上传日志')),
         ),
       ),
     );

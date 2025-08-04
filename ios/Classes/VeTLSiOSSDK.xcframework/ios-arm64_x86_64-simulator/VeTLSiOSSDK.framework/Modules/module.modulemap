@@ -1,0 +1,6 @@
+framework module VeTLSiOSSDK {
+  umbrella header "VeTLSiOSSDK.h"
+  export *
+
+  module * { export * }
+}

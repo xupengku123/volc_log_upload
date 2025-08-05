@@ -20,6 +20,7 @@ import com.volcengine.service.tls.TLSLogClient;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -113,26 +114,20 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
 
       if(logs!= null && !logs.isEmpty()){
         for (Map<String, Object> log : logs) {
+          Set<Map.Entry<String, Object>> entries = log.entrySet();
           Long createTimeMillis = (Long) log.get("createTime");
-          String content = (String) log.get("content");
-          String source = (String) log.get("source");
-          String path = (String) log.get("path");
-          String accountId = (String) log.get("accountId");
-          String level = (String) log.get("level");
-          String type = (String) log.get("type");
           if(createTimeMillis==null){
             createTimeMillis = System.currentTimeMillis();
           }
           LogItem item = new LogItem(createTimeMillis);
-          safeAddContent(item, "content", content);
-          safeAddContent(item, "source", source);
-          safeAddContent(item, "path", path);
-          safeAddContent(item, "accountId", accountId);
-          safeAddContent(item, "level", level);
-          safeAddContent(item, "type", type);
+          for (Map.Entry<String, Object> entry : entries) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+//            Log.d("VolcLogUploadPlugin", "key: " + key + ", value: " + value);
+            safeAddContent(item, key, value);
+          }
 
-          Log.d("Plugin", "LogEntity: " + createTimeMillis + ", content=" + content + ", source=" + source +
-                  ", path=" + path + ", accountId=" + accountId + ", level=" + level + ", type=" + type);
+          Log.d("VolcLogUploadPlugin", "LogEntity: " + item);
           resultLogs.add(item);
         }
       }
@@ -150,9 +145,9 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
     }).start();
   }
 
-  private void safeAddContent(LogItem item, String key, String value) {
+  private void safeAddContent(LogItem item, String key, Object value) {
     if (value != null) {
-      item.addContent(key, value);
+      item.addContent(key, value.toString());
     }
   }
 

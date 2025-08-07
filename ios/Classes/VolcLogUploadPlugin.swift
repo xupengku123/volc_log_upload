@@ -1,4 +1,5 @@
 import Flutter
+import Network
 import UIKit
 import VeTLSiOSSDK
 
@@ -69,32 +70,55 @@ public class VolcLogUploadPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        let request = PutLogsV2Request()
-        request.topicId = topicId
-        var tempLogs = [PutLogsV2LogItem]()
-
-        do {
-            for log in logs {
-                let timeStamp: NSNumber
-                if let createTime = log["createTime"] as? Int {
-                    timeStamp = NSNumber(value: createTime)
-                } else {
-                    timeStamp = NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))
-                }
-
-                let logItem = PutLogsV2LogItem(keyValueAndTime: log, timeStamp: timeStamp)
-
-                if logItem != nil {
-                    logItem!.time = timeStamp
-                    tempLogs.append(logItem!)
-                }
+        isNetworkAvailable { satisfied in
+            if !satisfied {
+                result(FlutterError(code: "NO_NETWORK", message: "当前网络不可用", details: nil))
+                return
             }
-            request.logs = tempLogs
 
-            let response = client.putLogsV2(request) // 也可能抛错
-            result(response?.toJSONString())
-        } catch {
-            result(FlutterError(code: "UPLOAD_EXCEPTION", message: "日志上传失败", details: error.localizedDescription))
+            let request = PutLogsV2Request()
+            request.topicId = topicId
+            var tempLogs = [PutLogsV2LogItem]()
+
+            do {
+                for log in logs {
+                    let timeStamp: NSNumber
+                    if let createTime = log["createTime"] as? Int {
+                        timeStamp = NSNumber(value: createTime)
+                    } else {
+                        timeStamp = NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))
+                    }
+
+                    let logItem = PutLogsV2LogItem(keyValueAndTime: log, timeStamp: timeStamp)
+
+                    if logItem != nil {
+                        logItem!.time = timeStamp
+                        tempLogs.append(logItem!)
+                    }
+                }
+                request.logs = tempLogs
+
+                let response = client.putLogsV2(request) // 也可能抛错
+                result(response?.toJSONString())
+            } catch {
+                result(FlutterError(code: "UPLOAD_EXCEPTION", message: "日志上传失败", details: error.localizedDescription))
+            }
         }
+    }
+
+    func isNetworkAvailable(completion: @escaping (Bool) -> Void) {
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "NetworkMonitor")
+
+        monitor.pathUpdateHandler = { path in
+            if path.status == .satisfied {
+                completion(true)
+            } else {
+                completion(false)
+            }
+            monitor.cancel() // 用完就取消，避免内存泄漏
+        }
+
+        monitor.start(queue: queue)
     }
 }

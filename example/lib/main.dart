@@ -96,7 +96,12 @@ class _MyAppState extends State<MyApp> {
     uploadLog() async {
       await _volcLogUploadPlugin.initClient(
           endpoint: ConstantValue.endpoint, region: ConstantValue.region, ak: ConstantValue.ak, sk: ConstantValue.sk);
-      _volcLogUploadPlugin.sendLog(ConstantValue.topicId, logs);
+
+      try {
+        _volcLogUploadPlugin.sendLog(ConstantValue.topicId, logs);
+      } catch (e) {
+        print('发生错误：${e}');
+      }
     }
 
     return MaterialApp(

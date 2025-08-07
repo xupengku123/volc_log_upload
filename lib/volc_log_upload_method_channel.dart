@@ -24,21 +24,32 @@ class MethodChannelVolcLogUpload extends VolcLogUploadPlatform {
     required String sk,
     String? securityToken,
   }) async {
-    await methodChannel.invokeMethod('initClient', {
-      'endpoint': endpoint,
-      'region': region,
-      'ak': ak,
-      'sk': sk,
-      'securityToken': securityToken,
-    });
+    try {
+      await methodChannel.invokeMethod('initClient', {
+        'endpoint': endpoint,
+        'region': region,
+        'ak': ak,
+        'sk': sk,
+        'securityToken': securityToken,
+      });
+    } on PlatformException catch (e) {
+      debugPrint("sendLog failed: ${e.code} - ${e.message}");
+      return null; // 或者根据 e.code 做不同处理
+    }
   }
 
+  // 调用前确定已经初始化。
   @override
-  Future<String?> sendLog(String topicId,List<LogEntity> logs) async {
-    final result = await methodChannel.invokeMethod<String>('sendLog', {
-      'topicId': topicId,
-      'logs' : logs.map((e) => e.toMap()).toList(),
-    });
-    return result;
+  Future<String?> sendLog(String topicId, List<LogEntity> logs) async {
+    try {
+      final result = await methodChannel.invokeMethod<String>('sendLog', {
+        'topicId': topicId,
+        'logs': logs.map((e) => e.toMap()).toList(),
+      });
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint("sendLog failed: ${e.code} - ${e.message}");
+      return null; // 或者根据 e.code 做不同处理
+    }
   }
 }

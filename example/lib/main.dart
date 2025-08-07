@@ -21,48 +21,50 @@ class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _volcLogUploadPlugin = VolcLogUpload();
 
-  List<LogEntity> logs = [
-    LogEntity(
-        createTime: DateTime.now(),
-        content: '11111',
-        platform: 'android',
-        path: 'homepageRouter',
-        level: 'error',
-        type: LogEntityType.click,
-        version: 'v1.42.0'),
-    LogEntity(
-        createTime: DateTime.now(),
-        content: '22222',
-        platform: 'android',
-        path: 'homepageRouter',
-        level: 'info',
-        type: LogEntityType.click,
-        version: 'v1.42.0'),
-    LogEntity(
-        createTime: DateTime.now(),
-        content: '33333',
-        platform: 'android',
-        path: 'homepageRouter',
-        level: 'waring',
-        type: LogEntityType.click,
-        version: 'v1.42.0'),
-    LogEntity(
-        createTime: DateTime.now(),
-        content: '44444',
-        platform: 'android',
-        path: 'homepageRouter',
-        level: 'waring',
-        type: LogEntityType.network,
-        version: 'v1.42.0'),
-    LogEntity(
-        createTime: DateTime.now(),
-        content: '55555',
-        platform: 'ios',
-        path: 'message',
-        level: 'waring',
-        type: LogEntityType.network,
-        version: 'v1.42.0'),
-  ];
+  List<LogEntity> logs() {
+    return [
+      LogEntity(
+          createTime: DateTime.now(),
+          content: '11111',
+          platform: 'android',
+          path: 'homepageRouter',
+          level: 'error',
+          type: LogEntityType.click,
+          version: 'v1.42.0'),
+      LogEntity(
+          createTime: DateTime.now(),
+          content: '22222',
+          platform: 'android',
+          path: 'homepageRouter',
+          level: 'info',
+          type: LogEntityType.click,
+          version: 'v1.42.0'),
+      LogEntity(
+          createTime: DateTime.now(),
+          content: '33333',
+          platform: 'android',
+          path: 'homepageRouter',
+          level: 'waring',
+          type: LogEntityType.click,
+          version: 'v1.42.0'),
+      LogEntity(
+          createTime: DateTime.now(),
+          content: '44444',
+          platform: 'android',
+          path: 'homepageRouter',
+          level: 'waring',
+          type: LogEntityType.network,
+          version: 'v1.42.0'),
+      LogEntity(
+          createTime: DateTime.now(),
+          content: '55555',
+          platform: 'ios',
+          path: 'message',
+          level: 'waring',
+          type: LogEntityType.network,
+          version: 'v1.42.0'),
+    ];
+  }
 
   @override
   void initState() {
@@ -98,7 +100,7 @@ class _MyAppState extends State<MyApp> {
           endpoint: ConstantValue.endpoint, region: ConstantValue.region, ak: ConstantValue.ak, sk: ConstantValue.sk);
 
       try {
-        _volcLogUploadPlugin.sendLog(ConstantValue.topicId, logs);
+        _volcLogUploadPlugin.sendLog(ConstantValue.topicId, logs());
       } catch (e) {
         print('发生错误：${e}');
       }

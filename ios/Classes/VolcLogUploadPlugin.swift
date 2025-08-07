@@ -72,7 +72,7 @@ public class VolcLogUploadPlugin: NSObject, FlutterPlugin {
 
         isNetworkAvailable { satisfied in
             if !satisfied {
-                result(FlutterError(code: "NO_NETWORK", message: "当前网络不可用", details: nil))
+                result(FlutterError(code: "-1", message: "当前网络不可用", details: nil))
                 return
             }
 
@@ -98,8 +98,40 @@ public class VolcLogUploadPlugin: NSObject, FlutterPlugin {
                 }
                 request.logs = tempLogs
 
-                let response = client.putLogsV2(request) // 也可能抛错
-                result(response?.toJSONString())
+                // 不阻塞当前线程
+                let task = client.putLogsV2Async(request)
+
+                task?.continueWith(block: { t in
+                    if let error = t.error {
+                        result(FlutterError(code: "-1", message: "Encountered error: \(error)", details: nil))
+                        return
+                    } else if let response = t.result as? GeneralHttpResponse {
+                        var responseDict: [String: Any] = [:]
+
+                        if response.requestId != nil {
+                            responseDict["requestId"] = response.requestId
+                        }
+
+                        if response.httpStatusCode.intValue != nil {
+                            responseDict["httpStatusCode"] = response.httpStatusCode.intValue
+                        }
+
+                        let responseBody = String(data: response.responseBody ?? Data(), encoding: .utf8) ?? ""
+                        responseDict["responseBody"] = responseBody
+
+                        if let jsonData = try? JSONSerialization.data(withJSONObject: responseDict, options: []),
+                           let jsonString = String(data: jsonData, encoding: .utf8) {
+                            result(jsonString)
+                        } else {
+                            result(FlutterError(code: "SERIALIZATION_ERROR", message: "Failed to serialize response", details: nil))
+                        }
+                        return
+                    }
+
+                    result("未知问题")
+                    return
+                })
+
             } catch {
                 result(FlutterError(code: "UPLOAD_EXCEPTION", message: "日志上传失败", details: error.localizedDescription))
             }

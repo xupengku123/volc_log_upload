@@ -97,7 +97,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
           } catch (LogException e) {
             result.error("UPLOAD_EXCEPTION", "火山引擎上传日志异常", null);
           }
-          Log.i("put logs success","response:" +resp);
+//          Log.i("put logs success","response:" +resp);
         logCount++;
         result.success("success:" + logCount);
       }).start();
@@ -127,7 +127,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
             safeAddContent(item, key, value);
           }
 
-          Log.d("VolcLogUploadPlugin", "LogEntity: " + item);
+//          Log.d("VolcLogUploadPlugin", "LogEntity: " + item);
           resultLogs.add(item);
         }
       }
@@ -137,7 +137,7 @@ public class VolcLogUploadPlugin implements FlutterPlugin, MethodCallHandler {
         try {
             PutLogsRequestV2 putLogsRequestV2 = new PutLogsRequestV2(resultLogs, topicId, null, LZ4);
             PutLogsResponse putLogsResponse = tlsLogClient.putLogsV2(putLogsRequestV2);
-          Log.i("put logs success","response:" +putLogsResponse);
+//          Log.i("put logs success","response:" +putLogsResponse);
           result.success("success:");
         } catch (LogException e) {
           result.error("UPLOAD_EXCEPTION", "火山引擎上传日志异常", null);
